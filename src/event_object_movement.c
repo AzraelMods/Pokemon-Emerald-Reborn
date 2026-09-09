@@ -71,6 +71,8 @@
 #error "OBJECT_EVENT_TEMPLATES_COUNT is too large. Object event local IDs may overlap with reserved IDs."
 #endif
 
+#define IS_CUSHION_GFX(gfx) ((gfx) >= OBJ_EVENT_GFX_PIKA_CUSHION && (gfx) <= OBJ_EVENT_GFX_WATER_CUSHION)
+
 // this file was known as evobjmv.c in Game Freak's original source
 
 enum {
@@ -6646,9 +6648,25 @@ u32 GetObjectObjectCollidesWith(struct ObjectEvent *objectEvent, s16 x, s16 y, b
     return OBJECT_EVENTS_COUNT;
 }
 
+//static bool8 DoesObjectCollideWithObjectAt(struct ObjectEvent *objectEvent, s16 x, s16 y)
+//{
+    //return (GetObjectObjectCollidesWith(objectEvent, x, y, FALSE) < OBJECT_EVENTS_COUNT);
+//}
+
 static bool8 DoesObjectCollideWithObjectAt(struct ObjectEvent *objectEvent, s16 x, s16 y)
 {
-    return (GetObjectObjectCollidesWith(objectEvent, x, y, FALSE) < OBJECT_EVENTS_COUNT);
+    u8 collidedId = GetObjectObjectCollidesWith(objectEvent, x, y, FALSE);
+
+    if (collidedId < OBJECT_EVENTS_COUNT)
+    {
+        // Bypass collision if the object standing on that tile is a cushion
+        if (IS_CUSHION_GFX(gObjectEvents[collidedId].graphicsId))
+            return FALSE;
+
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 bool8 IsBerryTreeSparkling(u8 localId, u8 mapNum, u8 mapGroup)
@@ -10101,6 +10119,13 @@ static void ObjectEventUpdateSubpriority(struct ObjectEvent *objEvent, struct Sp
         objEvent = &gObjectEvents[gPlayerAvatar.objectEventId];
 
     SetObjectSubpriorityByElevation(objEvent->previousElevation, sprite, 1);
+
+    // Force the cushion behind the player when standing on the same tile
+    if (IS_CUSHION_GFX(objEvent->graphicsId))///
+    {
+        sprite->subpriority += 4;
+    }
+
 }
 
 bool8 AreElevationsCompatible(u8 a, u8 b)

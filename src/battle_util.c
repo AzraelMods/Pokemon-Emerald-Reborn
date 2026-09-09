@@ -6078,11 +6078,11 @@ static const u8 sFlailHpScaleToPowerTable[] =
 // format: min. weight (hectograms), base power
 static const u16 sWeightToDamageTable[] =
 {
-    100, 20,
-    250, 40,
-    500, 60,
-    1000, 80,
-    2000, 100,
+    100, 40,
+    250, 55,
+    500, 70,
+    1000, 85,
+    2000, 105,
     0xFFFF, 0xFFFF
 };
 
@@ -6280,7 +6280,7 @@ static inline u32 CalcMoveBasePower(struct DamageContext *ctx)
         if (sWeightToDamageTable[i] != 0xFFFF)
             basePower = sWeightToDamageTable[i + 1];
         else
-            basePower = 120;
+            basePower = 105;
         break;
     case EFFECT_HEAT_CRASH:
         weight = GetBattlerWeight(battlerAtk) / GetBattlerWeight(battlerDef);
@@ -6498,6 +6498,11 @@ static inline u32 CalcMoveBasePowerAfterModifiers(struct DamageContext *ctx)
         modifier = uq4_12_multiply(modifier, UQ_4_12(1.5));
     if (IsGrassyTerrainAffected(battlerAtk, ctx->abilities[battlerAtk], ctx->holdEffects[battlerAtk], ctx->fieldStatuses) && moveType == TYPE_GRASS)
         modifier = uq4_12_multiply(modifier, (B_TERRAIN_TYPE_BOOST >= GEN_8 ? UQ_4_12(1.3) : UQ_4_12(1.5)));
+    // 25% more power in the sun
+    if ((GetAttackerWeather(ctx->holdEffects[ctx->battlerAtk], ctx->abilities[ctx->battlerAtk], ctx->weather) & B_WEATHER_SUN)
+     && MoveHas25MorePowerInSun(move))
+        modifier = uq4_12_multiply(modifier, UQ_4_12(1.25));
+    
     if (IsMistyTerrainAffected(battlerDef, ctx->abilities[battlerDef], ctx->holdEffects[battlerDef], ctx->fieldStatuses) && moveType == TYPE_DRAGON)
         modifier = uq4_12_multiply(modifier, UQ_4_12(0.5));
     if (IsElectricTerrainAffected(battlerAtk, ctx->abilities[battlerAtk], ctx->holdEffects[battlerAtk], ctx->fieldStatuses) && moveType == TYPE_ELECTRIC)
@@ -7316,14 +7321,28 @@ static uq4_12_t GetWeatherDamageModifier(struct DamageContext *ctx)
     {
         if (ctx->moveType != TYPE_FIRE && ctx->moveType != TYPE_WATER)
             return UQ_4_12(1.0);
-        return (ctx->moveType == TYPE_WATER) ? UQ_4_12(0.5) : UQ_4_12(1.5);
+        return (ctx->moveType == TYPE_WATER) ? UQ_4_12(0.8) : UQ_4_12(1.25);
     }
 
     if (ctx->weather & B_WEATHER_RAIN || attackerWeather & B_WEATHER_RAIN)
     {
         if (ctx->moveType != TYPE_FIRE && ctx->moveType != TYPE_WATER)
             return UQ_4_12(1.0);
-        return (ctx->moveType == TYPE_FIRE) ? UQ_4_12(0.5) : UQ_4_12(1.5);
+        return (ctx->moveType == TYPE_FIRE) ? UQ_4_12(0.8) : UQ_4_12(1.25);
+    }
+
+    if (ctx->weather & B_WEATHER_SANDSTORM || attackerWeather & B_WEATHER_SANDSTORM)
+    {
+        if (ctx->moveType != TYPE_GROUND)
+            return UQ_4_12(1.0);
+        return UQ_4_12(1.25);
+    }
+
+    if (ctx->weather & B_WEATHER_HAIL || attackerWeather & B_WEATHER_HAIL)
+    {
+        if (ctx->moveType != TYPE_ICE)
+            return UQ_4_12(1.0);
+        return UQ_4_12(1.25);
     }
 
     return UQ_4_12(1.0);
@@ -7348,7 +7367,7 @@ static inline uq4_12_t GetBurnOrFrostBiteModifier(struct DamageContext *ctx)
 static inline uq4_12_t GetCriticalModifier(bool32 isCrit)
 {
     if (isCrit)
-        return GetConfig(B_CRIT_MULTIPLIER) >= GEN_6 ? UQ_4_12(1.5) : UQ_4_12(2.0);
+        return GetConfig(B_CRIT_MULTIPLIER) >= GEN_6 ? UQ_4_12(1.25) : UQ_4_12(2.0);
     return UQ_4_12(1.0);
 }
 
@@ -7395,6 +7414,14 @@ static inline uq4_12_t GetAirborneModifier(enum Move move, enum BattlerId battle
 {
     if (MoveDamagesAirborneDoubleDamage(move) && IsBattlerOnAir(battlerDef))
         return UQ_4_12(2.0);
+    return UQ_4_12(1.0);
+}
+
+static inline uq4_12_t GetChargeTurnDamageModifier(struct DamageContext *ctx) //DAMAGE REDUCTION WHILE CHARGING
+{
+    if (gProtectStructs[ctx->battlerDef].chargingTurn
+     && MoveReducesDamageOnChargeTurn(gLockedMoves[ctx->battlerDef]))
+        return UQ_4_12(0.75);
     return UQ_4_12(1.0);
 }
 
@@ -7600,6 +7627,7 @@ static inline uq4_12_t GetOtherModifiers(struct DamageContext *ctx)
     DAMAGE_MULTIPLY_MODIFIER(GetUndergroundModifier(ctx->move, ctx->battlerDef));
     DAMAGE_MULTIPLY_MODIFIER(GetDiveModifier(ctx->move, ctx->battlerDef));
     DAMAGE_MULTIPLY_MODIFIER(GetAirborneModifier(ctx->move, ctx->battlerDef));
+    DAMAGE_MULTIPLY_MODIFIER(GetChargeTurnDamageModifier(ctx)); //DAMAGE REDUCTION WHILE CHARGING
     DAMAGE_MULTIPLY_MODIFIER(GetScreensModifier(ctx));
     DAMAGE_MULTIPLY_MODIFIER(GetCollisionCourseElectroDriftModifier(ctx->move, ctx->typeEffectivenessModifier));
 
@@ -7819,7 +7847,7 @@ static inline s32 DoFutureSightAttackDamageCalc(struct DamageContext *ctx)
 #undef DAMAGE_APPLY_MODIFIER
 
 // The chance is 1/N for each stage.
-static const u32 sGen7CriticalHitOdds[] = {24,  8,  2,  1,   1}; // 1/X
+static const u32 sGen7CriticalHitOdds[] = {20,  10,  4,  2,   1}; // 1/X
 static const u32 sGen6CriticalHitOdds[] = {16,  8,  2,  1,   1}; // 1/X
 static const u32 sCriticalHitOdds[]     = {16,  8,  4,  3,   2}; // 1/X, Gens 3,4,5
 static const u32 sGen2CriticalHitOdds[] = {17, 32, 64, 85, 128}; // X/256
@@ -7873,6 +7901,7 @@ static inline u32 GetHoldEffectCritChanceIncrease(enum BattlerId battler, enum H
 
 s32 CalcCritChanceStage(struct DamageContext *ctx)
 {
+    
     s32 critChance = 0;
 
     if (gSideStatuses[GetBattlerSide(ctx->battlerDef)] & SIDE_STATUS_LUCKY_CHANT)
@@ -10337,6 +10366,61 @@ u32 GetTotalAccuracy(enum BattlerId battlerAtk, enum BattlerId battlerDef, enum 
     // Check Thunder and Hurricane on sunny weather.
     if ((attackerWeather & B_WEATHER_SUN) && MoveHas50AccuracyInSun(move))
         moveAcc = 50;
+
+    
+    // Modify move accuracy in sunny weather.
+    if ((attackerWeather & B_WEATHER_SUN) && MoveHas25MoreAccuracyInSun(move))
+    {
+        moveAcc = (moveAcc * 125) / 100;
+        if (moveAcc > 100)
+            moveAcc = 100;
+    }
+
+    // Modify move accuracy in rainy weather.
+    if ((attackerWeather & B_WEATHER_RAIN) && MoveHas25MoreAccuracyInRain(move))
+    {
+        moveAcc = (moveAcc * 125) / 100;
+        if (moveAcc > 100)
+            moveAcc = 100;
+    }
+
+    // Modify move accuracy in sandy weather.
+    if ((attackerWeather & B_WEATHER_SANDSTORM) && MoveHas25MoreAccuracyInSandstorm(move))
+    {
+        moveAcc = (moveAcc * 125) / 100;
+        if (moveAcc > 100)
+            moveAcc = 100;
+    }
+
+    // Modify move accuracy in snowy weather.
+    if ((attackerWeather & B_WEATHER_HAIL) && MoveHas25MoreAccuracyInHail(move))
+    {
+        moveAcc = (moveAcc * 125) / 100;
+        if (moveAcc > 100)
+            moveAcc = 100;
+    }
+
+    // Sun and sand-based moves lose accuracy in rain.
+    if ((attackerWeather & B_WEATHER_RAIN)
+     && (MoveHas25MoreAccuracyInSun(move) || MoveHas25MoreAccuracyInSandstorm(move)))
+        moveAcc = (moveAcc * 90) / 100;
+    
+    // Sun and sand-based moves lose accuracy in hail.
+    if ((attackerWeather & B_WEATHER_HAIL)
+     && (MoveHas25MoreAccuracyInSun(move) || MoveHas25MoreAccuracyInSandstorm(move)))
+        moveAcc = (moveAcc * 90) / 100;
+    
+    // Rain and hail-based moves lose accuracy in sunny weather.
+    if ((attackerWeather & B_WEATHER_SUN)
+     && (MoveHas25MoreAccuracyInRain(move) || MoveHas25MoreAccuracyInHail(move)))
+        moveAcc = (moveAcc * 90) / 100;
+
+    // Rain and hail-based moves lose accuracy in sandy weather.
+    if ((attackerWeather & B_WEATHER_SANDSTORM)
+     && (MoveHas25MoreAccuracyInRain(move) || MoveHas25MoreAccuracyInHail(move)))
+        moveAcc = (moveAcc * 90) / 100;
+
+    
     // Check Wonder Skin.
     if (defAbility == ABILITY_WONDER_SKIN && IsBattleMoveStatus(move) && moveAcc > 50)
         moveAcc = 50;
@@ -10791,17 +10875,8 @@ bool32 IsUsableWhileAsleepEffect(enum BattleMoveEffects effect)
 
 void SetWrapTurns(enum BattlerId battler, enum HoldEffect holdEffect)
 {
-    u32 normalWrapTurns = B_WRAP_TURNS - 2; // 5 turns
-    if (holdEffect == HOLD_EFFECT_GRIP_CLAW)
-    {
-        gBattleMons[battler].volatiles.wrapTurns = GetConfig(B_BINDING_TURNS) >= GEN_5 ? B_WRAP_TURNS : normalWrapTurns;
-        gBattleMons[battler].volatiles.wrappedBindingBand = FALSE;
-    }
-    else
-    {
-        gBattleMons[battler].volatiles.wrapTurns = GetConfig(B_BINDING_TURNS) >= GEN_5 ? RandomUniform(RNG_WRAP, 4, normalWrapTurns) : RandomUniform(RNG_WRAP, 2, normalWrapTurns);
-        gBattleMons[battler].volatiles.wrappedBindingBand = holdEffect == HOLD_EFFECT_BINDING_BAND;
-    }
+    gBattleMons[battler].volatiles.wrapTurns = holdEffect == HOLD_EFFECT_GRIP_CLAW ? 4 : 3;
+    gBattleMons[battler].volatiles.wrappedBindingBand = holdEffect == HOLD_EFFECT_BINDING_BAND;
 }
 
 // Return True if the order was changed, and false if the order was not changed(for example because the target would move after the attacker anyway).

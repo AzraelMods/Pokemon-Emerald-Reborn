@@ -4295,6 +4295,14 @@ static enum MoveEndResult MoveEndClearBits(struct BattleCalcValues *cv)
     if (gSpecialStatuses[cv->battlerAtk].backUpTarget)
         gBattleStruct->moveTarget[cv->battlerAtk] = gSpecialStatuses[cv->battlerAtk].backUpTarget - 1;
 
+    if (cv->move == MOVE_SOLAR_BEAM //SOLAR BEAM REWORK
+     && CanTwoTurnMoveFireThisTurn(cv)
+     && !gBattleStruct->unableToUseMove)
+    {
+        gBattleMons[cv->battlerAtk].volatiles.rechargeTimer = 2;
+        gLockedMoves[cv->battlerAtk] = cv->move;
+    }
+
     // If the Pokémon needs to keep track of move usage for its evolutions, do it
     if (originallyUsedMove != MOVE_NONE)
         TryUpdateEvolutionTracker(IF_USED_MOVE_X_TIMES, 1, originallyUsedMove);

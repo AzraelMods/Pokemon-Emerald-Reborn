@@ -1082,9 +1082,9 @@ const struct SpeciesInfo gSpeciesInfoGen3[] =
 #if P_FAMILY_ZIGZAGOON
     [SPECIES_ZIGZAGOON] =
     {
-        .baseHP        = 38,
+        .baseHP        = 250,
         .baseAttack    = 30,
-        .baseDefense   = 41,
+        .baseDefense   = 200,
         .baseSpeed     = 60,
         .baseSpAttack  = 30,
         .baseSpDefense = 41,

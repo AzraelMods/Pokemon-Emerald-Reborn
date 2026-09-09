@@ -2505,6 +2505,8 @@ gBattleAnimMove_LavaPlume::
 	end
 
 gBattleAnimMove_LeafStorm::
+	choosetwoturnanim SolarBeamSetUp, LeafStormAttack
+LeafStormAttack:
 	monbg ANIM_DEF_PARTNER
 	splitbgprio_foes ANIM_TARGET
 	setalpha 12, 8

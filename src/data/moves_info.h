@@ -606,14 +606,14 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
             "Strikes the foe with\n"
             "slender, whiplike vines."),
         #if B_UPDATED_MOVE_DATA >= GEN_6
-            .pp = 25,
+            .pp = 30,
         #elif B_UPDATED_MOVE_DATA >= GEN_4
             .pp = 15,
         #else
             .pp = 10,
         #endif
         .effect = EFFECT_HIT,
-        .power = B_UPDATED_MOVE_DATA >= GEN_6 ? 45 : 35,
+        .power = B_UPDATED_MOVE_DATA >= GEN_6 ? 40 : 35,
         .type = TYPE_GRASS,
         .accuracy = 100,
         .target = TARGET_SELECTED,
@@ -1920,10 +1920,10 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Absorb"),
         .description = COMPOUND_STRING(
-            "An attack that absorbs\n"
-            "half the damage inflicted."),
+            "Restores half of the damage\n"
+            "inflicted."),
         .effect = EFFECT_ABSORB,
-        .power = 20,
+        .power = 35,
         .type = TYPE_GRASS,
         .accuracy = 100,
         .pp = B_UPDATED_MOVE_DATA >= GEN_4 ? 25 : 20,
@@ -2053,13 +2053,13 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Solar Beam"),
         .description = COMPOUND_STRING(
-            "Absorbs light in one turn,\n"
-            "then attacks next turn."),
+            "Needs charging. Fires instantly\n"
+            "in the sun, then recharges."),
         .effect = EFFECT_SOLAR_BEAM,
-        .power = 120,
+        .power = 125,
         .type = TYPE_GRASS,
         .accuracy = 100,
-        .pp = 10,
+        .pp = 15,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_SPECIAL,
@@ -8254,22 +8254,21 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Needle Arm"),
         .description = COMPOUND_STRING(
-            "Attacks with thorny arms.\n"
-            "May cause flinching."),
+            "Attacks with thorny arms."),
         .effect = EFFECT_HIT,
         .power = 60,
         .type = TYPE_GRASS,
         .accuracy = 100,
-        .pp = 15,
+        .pp = 20,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,
         .makesContact = TRUE,
         .minimizeDoubleDamage = B_UPDATED_MOVE_FLAGS < GEN_4,
-        .additionalEffects = ADDITIONAL_EFFECTS({
-            .moveEffect = MOVE_EFFECT_FLINCH,
-            .chance = 30,
-        }),
+        //.additionalEffects = ADDITIONAL_EFFECTS({
+            //.moveEffect = MOVE_EFFECT_FLINCH,
+            //.chance = 30,
+        //}),
         .contestEffect = C_UPDATED_MOVE_EFFECTS >= GEN_6 ? CONTEST_EFFECT_HIGHLY_APPEALING : CONTEST_EFFECT_BADLY_STARTLE_FRONT_MON,
         .contestCategory = CONTEST_CATEGORY_SMART,
         .contestComboStarterId = 0,
@@ -9035,13 +9034,13 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Bullet Seed"),
         .description = COMPOUND_STRING(
-            "Shoots 2 to 5 seeds in a row\n"
-            "to strike the foe."),
+            "Shoots high veocity seeds.\n"
+            "Strikes 2 to 5 times."),
         .effect = EFFECT_HIT,
         .power = B_UPDATED_MOVE_DATA >= GEN_5 ? 25 : 10,
         .type = TYPE_GRASS,
-        .accuracy = 100,
-        .pp = 30,
+        .accuracy = 95,
+        .pp = 15,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,
@@ -9213,19 +9212,19 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Frenzy Plant"),
         .description = COMPOUND_STRING(
-            "Powerful, but leaves the\n"
-            "user immobile the next turn."),
+            "Strikes for 2-3 turns, then\n"
+            "becomes enraged for 3 turns."),
         .effect = EFFECT_HIT,
-        .power = 150,
+        .power = 165,
         .type = TYPE_GRASS,
         .accuracy = 90,
         .pp = 5,
-        .target = TARGET_SELECTED,
+        .target = TARGET_RANDOM,
         .priority = 0,
-        .category = DAMAGE_CATEGORY_SPECIAL,
+        .category = DAMAGE_CATEGORY_PHYSICAL,
         .skyBattleBanned = TRUE,
         .additionalEffects = ADDITIONAL_EFFECTS({
-            .moveEffect = MOVE_EFFECT_RECHARGE,
+            .moveEffect = MOVE_EFFECT_THRASH,
             .self = TRUE,
         }),
         .contestEffect = CONTEST_EFFECT_JAMS_OTHERS_BUT_MISS_ONE_TURN,
@@ -9503,11 +9502,11 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
             "Slashes with a sharp leaf.\n"
             "High critical-hit ratio."),
         .effect = EFFECT_HIT,
-        .power = B_UPDATED_MOVE_DATA >= GEN_4 ? 90 : 70,
+        .power = B_UPDATED_MOVE_DATA >= GEN_4 ? 80 : 70,
         .type = TYPE_GRASS,
         .accuracy = 100,
         .criticalHitStage = B_UPDATED_MOVE_DATA >= GEN_3 ? 1 : 2,
-        .pp = 15,
+        .pp = 10,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,
@@ -10848,13 +10847,13 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Seed Bomb"),
         .description = COMPOUND_STRING(
-            "A barrage of hard seeds\n"
-            "is fired at the foe."),
+            "50% chance to plant a leech\n"
+            "seed on the target."),
         .effect = EFFECT_HIT,
-        .power = 80,
+        .power = 75,
         .type = TYPE_GRASS,
-        .accuracy = 100,
-        .pp = 15,
+        .accuracy = 95,
+        .pp = 10,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,
@@ -11741,21 +11740,18 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Leaf Storm"),
         .description = COMPOUND_STRING(
-            "Whips up a storm of leaves.\n"
-            "Harshly lowers the Sp. Atk."),
-        .effect = EFFECT_HIT,
-        .power = B_UPDATED_MOVE_DATA >= GEN_6 ? 130 : 140,
+            "Needs charging. Take 25% less\n"
+            "damage while charging."),
+        .effect = EFFECT_TWO_TURNS_ATTACK,
+        .power = B_UPDATED_MOVE_DATA >= GEN_6 ? 175 : 140,
         .type = TYPE_GRASS,
-        .accuracy = 90,
-        .pp = 5,
+        .accuracy = 100,
+        .pp = 10,
         .target = TARGET_SELECTED,
-        .priority = 0,
+        .priority = 1,
         .category = DAMAGE_CATEGORY_SPECIAL,
-        .additionalEffects = ADDITIONAL_EFFECTS({
-            .moveEffect = MOVE_EFFECT_STAT_MINUS,
-            .spAtk = 2,
-            .self = TRUE,
-        }),
+        .reducesDamageOnChargeTurn = TRUE,
+        .argument.twoTurnAttack = { .stringId = STRINGID_PKMNGATHERINGPOWERBRACED },
         .contestEffect = CONTEST_EFFECT_USER_MORE_EASILY_STARTLED,
         .contestCategory = C_UPDATED_MOVE_CATEGORIES >= GEN_6 ? CONTEST_CATEGORY_BEAUTY : CONTEST_CATEGORY_CUTE,
         .contestComboStarterId = 0,
@@ -11767,16 +11763,16 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Power Whip"),
         .description = COMPOUND_STRING(
-            "Violently lashes the foe\n"
-            "with vines or tentacles."),
-        .effect = EFFECT_HIT,
-        .power = 120,
+            "Deals 20% recoil damage."),
+        .effect = EFFECT_RECOIL,
+        .power = 100,
         .type = TYPE_GRASS,
-        .accuracy = 85,
-        .pp = 10,
+        .accuracy = 100,
+        .pp = 15,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,
+        .argument = { .recoilPercentage = 20 },
         .makesContact = TRUE,
         .contestEffect = CONTEST_EFFECT_BETTER_WHEN_AUDIENCE_EXCITED,
         .contestCategory = C_UPDATED_MOVE_CATEGORIES >= GEN_6 ? CONTEST_CATEGORY_TOUGH : CONTEST_CATEGORY_BEAUTY,
@@ -11996,12 +11992,12 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Grass Knot"),
         .description = COMPOUND_STRING(
-            "A snare attack that does\n"
-            "more damage to heavier foes."),
+            "Deals higher damage to heavier\n"
+            "targets."),
         .effect = EFFECT_LOW_KICK,
         .power = 1,
         .type = TYPE_GRASS,
-        .accuracy = 100,
+        .accuracy = 95,
         .pp = 20,
         .target = TARGET_SELECTED,
         .priority = 0,
@@ -12134,17 +12130,16 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Wood Hammer"),
         .description = COMPOUND_STRING(
-            "Slams the body into a foe.\n"
-            "The user gets hurt too."),
+            "Deals 20% recoil damage."),
         .effect = EFFECT_RECOIL,
-        .power = 120,
+        .power = 150,
         .type = TYPE_GRASS,
-        .accuracy = 100,
-        .pp = 15,
+        .accuracy = 95,
+        .pp = 10,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,
-        .argument = { .recoilPercentage = 33 },
+        .argument = { .recoilPercentage = 20 },
         .makesContact = TRUE,
         .contestEffect = CONTEST_EFFECT_USER_MORE_EASILY_STARTLED,
         .contestCategory = CONTEST_CATEGORY_TOUGH,
@@ -14149,8 +14144,8 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Horn Leech"),
         .description = COMPOUND_STRING(
-            "An attack that absorbs\n"
-            "half the damage inflicted."),
+            "Restores health equal to 50%\n"
+            "of damage dealt."),
         .effect = EFFECT_ABSORB,
         .power = 75,
         .type = TYPE_GRASS,
@@ -14248,21 +14243,21 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Leaf Tornado"),
         .description = COMPOUND_STRING(
-            "Circles the foe with leaves\n"
-            "to damage and cut accuracy."),
+            "Launches a small twister of\n"
+            "leaves at the target."),
         .effect = EFFECT_HIT,
-        .power = 65,
+        .power = 60,
         .type = TYPE_GRASS,
-        .accuracy = 90,
-        .pp = 10,
+        .accuracy = 100,
+        .pp = 20,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_SPECIAL,
-        .additionalEffects = ADDITIONAL_EFFECTS({
-            .moveEffect = MOVE_EFFECT_STAT_MINUS,
-            .accuracy = 1,
-            .chance = 50,
-        }),
+        //.additionalEffects = ADDITIONAL_EFFECTS({
+            //.moveEffect = MOVE_EFFECT_STAT_MINUS,
+            //.accuracy = 1,
+            //.chance = 50,
+        //}),
         .contestEffect = CONTEST_EFFECT_REPETITION_NOT_BORING,
         .contestCategory = CONTEST_CATEGORY_COOL,
         .contestComboStarterId = 0,
@@ -16789,16 +16784,16 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Leafage"),
         .description = COMPOUND_STRING(
-            "Attacks with a flurry of\n"
-            "small leaves."),
+            "Launches a flurry of small\n"
+            "leaves."),
         .effect = EFFECT_HIT,
         .power = 40,
         .type = TYPE_GRASS,
         .accuracy = 100,
-        .pp = 40,
+        .pp = 30,
         .target = TARGET_SELECTED,
         .priority = 0,
-        .category = DAMAGE_CATEGORY_PHYSICAL,
+        .category = DAMAGE_CATEGORY_SPECIAL,
         .contestEffect = CONTEST_EFFECT_HIGHLY_APPEALING,
         .contestCategory = CONTEST_CATEGORY_COOL,
         .contestComboStarterId = 0,
@@ -17237,24 +17232,26 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
 
     [MOVE_TROP_KICK] =
     {
-        .name = COMPOUND_STRING("Trop Kick"),
+        .name = COMPOUND_STRING("Tropical Kick"),
         .description = COMPOUND_STRING(
-            "An intense kick from the\n"
-            "tropics. Lowers Attack."),
+            "Gains 25% power and accuracy\n"
+            "in the sun."),
         .effect = EFFECT_HIT,
         .power = 70,
         .type = TYPE_GRASS,
-        .accuracy = 100,
-        .pp = 15,
+        .accuracy = 80,
+        .pp = 10,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,
         .makesContact = TRUE,
-        .additionalEffects = ADDITIONAL_EFFECTS({
-            .moveEffect = MOVE_EFFECT_STAT_MINUS,
-            .attack = 1,
-            .chance = 100,
-        }),
+        .accuracyPlus25InSun = TRUE,
+        .powerPlus25InSun = TRUE,
+        //.additionalEffects = ADDITIONAL_EFFECTS({
+            //.moveEffect = MOVE_EFFECT_STAT_MINUS,
+            //.attack = 1,
+            //.chance = 100,
+        //}),
         .contestEffect = CONTEST_EFFECT_BADLY_STARTLE_PREV_MONS,
         .contestCategory = CONTEST_CATEGORY_TOUGH,
         .contestComboStarterId = 0,
@@ -18654,15 +18651,15 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
 
     [MOVE_SNAP_TRAP] =
     {
-        .name = COMPOUND_STRING("Snap Trap"),
+        .name = COMPOUND_STRING("Vine Trap"),
         .description = COMPOUND_STRING(
-            "Snares the target in a snap\n"
-            "trap for four to five turns."),
+            "Traps the target for 3 turns,\n"
+            "and deals 5% damage each turn."),
         .effect = EFFECT_HIT,
-        .power = 35,
+        .power = 40,
         .type = TYPE_GRASS,
         .accuracy = 100,
-        .pp = 15,
+        .pp = 10,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,
@@ -21160,13 +21157,12 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
     {
         .name = COMPOUND_STRING("Trailblaze"),
         .description = COMPOUND_STRING(
-            "The user attacks suddenly,\n"
-            "raising its Speed."),
+            "Increases speed."),
         .effect = EFFECT_HIT,
-        .power = 50,
+        .power = 45,
         .type = TYPE_GRASS,
         .accuracy = 100,
-        .pp = 20,
+        .pp = 15,
         .target = TARGET_SELECTED,
         .priority = 0,
         .category = DAMAGE_CATEGORY_PHYSICAL,

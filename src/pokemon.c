@@ -504,19 +504,15 @@ const u8 gPPUpAddValues[MAX_MON_MOVES] = {PP_UP_SHIFTS(1)};
 
 const u8 gStatStageRatios[MAX_STAT_STAGE + 1][2] =
 {
-    {10, 40}, // -6, MIN_STAT_STAGE
-    {10, 35}, // -5
-    {10, 30}, // -4
-    {10, 25}, // -3
-    {10, 20}, // -2
-    {10, 15}, // -1
-    {10, 10}, //  0, DEFAULT_STAT_STAGE
-    {15, 10}, // +1
-    {20, 10}, // +2
-    {25, 10}, // +3
-    {30, 10}, // +4
-    {35, 10}, // +5
-    {40, 10}, // +6, MAX_STAT_STAGE
+    { 1, 2 }, // -4 (0.500x Stat -> 2.00x Effective Health)
+    { 4, 7 }, // -3 (0.571x Stat -> 1.75x Effective Health)
+    { 2, 3 }, // -2 (0.667x Stat -> 1.50x Effective Health)
+    { 4, 5 }, // -1 (0.800x Stat -> 1.25x Effective Health)
+    { 1, 1 }, //  0 (1.000x Baseline)
+    { 5, 4 }, // +1 (1.250x Stat -> 1.25x Damage Dealt)
+    { 3, 2 }, // +2 (1.500x Stat -> 1.50x Damage Dealt)
+    { 7, 4 }, // +3 (1.750x Stat -> 1.75x Damage Dealt)
+    { 2, 1 }, // +4 (2.000x Stat -> 2.00x Damage Dealt)
 };
 
 // The classes used by other players in the Union Room.

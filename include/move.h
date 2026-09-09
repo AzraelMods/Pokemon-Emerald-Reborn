@@ -145,10 +145,18 @@ struct MoveInfo
     bool32 alwaysHitsInRain:1;
     bool32 accuracy50InSun:1;
     bool32 alwaysHitsInHailSnow:1;
+    
+    //New Weather & Terrain FLags
+    bool32 accuracyPlus25InSun:1;
+    bool32 accuracyPlus25InRain:1;
+    bool32 accuracyPlus25InSandstorm:1;
+    bool32 accuracyPlus25InHail:1;
+    bool32 powerPlus25InSun:1;
+    
     bool32 alwaysHitsOnSameType:1; // Always hits if user is of same type as move
     bool32 noAffectOnSameTypeTarget:1; // Fails if target is of same type as move
     bool32 accIncreaseByTenOnSameType:1; // Accuracy is increased by 10% if user is of same type as move
-    bool32 padding1:15;
+    bool32 padding1:10;
     // end of word
 
     // Ban flags
@@ -168,7 +176,8 @@ struct MoveInfo
     bool32 dampBanned:1;
     //Other
     bool32 validApprenticeMove:1;
-    u32 padding2:17;
+    bool32 reducesDamageOnChargeTurn:1; //DAMAGE REDUCTION WHILE CHARGING
+    u32 padding2:16;
     // end of word
 
     union {
@@ -447,6 +456,11 @@ static inline bool32 MoveDamagesAirborneDoubleDamage(enum Move moveId)
     return gMovesInfo[SanitizeMoveId(moveId)].damagesAirborneDoubleDamage;
 }
 
+static inline bool32 MoveReducesDamageOnChargeTurn(enum Move moveId) //DAMAGE REDUCTION WHILE CHARGING
+{
+    return gMovesInfo[SanitizeMoveId(moveId)].reducesDamageOnChargeTurn;
+}
+
 static inline bool32 MoveIgnoresTypeIfFlyingAndUngrounded(enum Move moveId)
 {
     return gMovesInfo[SanitizeMoveId(moveId)].ignoreTypeIfFlyingAndUngrounded;
@@ -480,6 +494,31 @@ static inline bool32 MoveAlwaysHitsInRain(enum Move moveId)
 static inline bool32 MoveHas50AccuracyInSun(enum Move moveId)
 {
     return gMovesInfo[SanitizeMoveId(moveId)].accuracy50InSun;
+}
+
+static inline bool32 MoveHas25MoreAccuracyInSun(enum Move moveId)
+{
+    return gMovesInfo[SanitizeMoveId(moveId)].accuracyPlus25InSun;
+}
+
+static inline bool32 MoveHas25MoreAccuracyInRain(enum Move moveId)
+{
+    return gMovesInfo[SanitizeMoveId(moveId)].accuracyPlus25InRain;
+}
+
+static inline bool32 MoveHas25MoreAccuracyInSandstorm(enum Move moveId)
+{
+    return gMovesInfo[SanitizeMoveId(moveId)].accuracyPlus25InSandstorm;
+}
+
+static inline bool32 MoveHas25MoreAccuracyInHail(enum Move moveId)
+{
+    return gMovesInfo[SanitizeMoveId(moveId)].accuracyPlus25InHail;
+}
+
+static inline bool32 MoveHas25MorePowerInSun(enum Move moveId)
+{
+    return gMovesInfo[SanitizeMoveId(moveId)].powerPlus25InSun;
 }
 
 static inline bool32 MoveAlwaysHitsInHailSnow(enum Move moveId)

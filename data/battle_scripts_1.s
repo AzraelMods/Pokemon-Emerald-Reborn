@@ -1863,6 +1863,11 @@ BattleScript_PowerHerbActivation::
 BattleScript_TwoTurnMoveCharging::
 	waitmessage B_WAIT_TIME_LONG
 	twoturnmoveschargestringandanimation
+	jumpifnotmove MOVE_LEAF_STORM, BattleScript_TwoTurnMoveChargingEnd
+	setbyte sB_ANIM_ARG1, 2 @ STAT_ANIM_PLUS1 + STAT_DEF
+	playanimation BS_ATTACKER, B_ANIM_STATS_CHANGE, sB_ANIM_ARG1
+	waitanimation
+BattleScript_TwoTurnMoveChargingEnd:
 	setadditionaleffects @ only onChargeTurnOnly effects will work here
 	return
 

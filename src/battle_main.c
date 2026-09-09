@@ -4104,7 +4104,8 @@ static void HandleTurnActionSelectionState(void)
                 else
                 {
                     if (gBattleMons[battler].volatiles.multipleTurns
-                        || gBattleMons[battler].volatiles.rechargeTimer > 0)
+                        || (gBattleMons[battler].volatiles.rechargeTimer > 0
+                            && gLockedMoves[battler] != MOVE_SOLAR_BEAM)) //SOLAR BEAM REWORK LOCKOUT
                     {
                         gChosenActionByBattler[battler] = B_ACTION_USE_MOVE;
                         gBattleCommunication[battler] = STATE_WAIT_ACTION_CONFIRMED_STANDBY;
@@ -4270,7 +4271,8 @@ static void HandleTurnActionSelectionState(void)
                     gBattleCommunication[GetPartnerBattler(battler)] = STATE_BEFORE_ACTION_CHOSEN;
                     RecordedBattle_ClearBattlerAction(battler, 1);
                     if (gBattleMons[GetPartnerBattler(battler)].volatiles.multipleTurns
-                        || gBattleMons[GetPartnerBattler(battler)].volatiles.rechargeTimer > 0)
+                        || (gBattleMons[GetPartnerBattler(battler)].volatiles.rechargeTimer > 0
+                            && gLockedMoves[GetPartnerBattler(battler)] != MOVE_SOLAR_BEAM)) //SOLAR BEAM REWORK LOCKOUT
                     {
                         BtlController_EmitEndBounceEffect(battler, B_COMM_TO_CONTROLLER);
                         MarkBattlerForControllerExec(battler);

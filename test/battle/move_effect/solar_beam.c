@@ -33,6 +33,22 @@ SINGLE_BATTLE_TEST("Solar Beam does not need a charging turn if Sun is up")
     }
 }
 
+SINGLE_BATTLE_TEST("Solar Beam requires recharge after firing instantly in Sun")
+{
+    GIVEN {
+        PLAYER(SPECIES_TORKOAL) { Ability(ABILITY_DROUGHT); }
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { MOVE(player, MOVE_SOLAR_BEAM); }
+        TURN { MOVE(player, MOVE_TACKLE); }
+    } SCENE {
+        MESSAGE("Torkoal used Solar Beam!");
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_SOLAR_BEAM, player);
+        MESSAGE("Torkoal must recharge!");
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_TACKLE, player);
+    }
+}
+
 SINGLE_BATTLE_TEST("Solar Beam does half damage if Sandstorm is up (Gen3+)", s16 damage)
 {
     enum Ability ability;

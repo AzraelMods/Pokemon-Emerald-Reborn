@@ -24,7 +24,7 @@
 #include "constants/songs.h"
 #include "constants/rgb.h"
 
-#define STARTER_MON_COUNT   3
+#define STARTER_MON_COUNT   9
 
 // Position of the sprite of the selected starter Pokémon
 #define STARTER_PKMN_POS_X (DISPLAY_WIDTH / 2)
@@ -98,16 +98,28 @@ static const struct WindowTemplate sWindowTemplate_StarterLabel =
 
 static const u8 sPokeballCoords[STARTER_MON_COUNT][2] =
 {
-    {60, 64},
-    {120, 88},
-    {180, 64},
+    { 24, 52},
+    { 48, 60},
+    { 72, 68},
+    { 96, 76},
+    {120, 84}, // Middle tip of the V
+    {144, 76},
+    {168, 68},
+    {192, 60},
+    {216, 52},
 };
 
 static const u8 sStarterLabelCoords[STARTER_MON_COUNT][2] =
 {
-    {0, 9},
-    {16, 10},
-    {8, 4},
+    { 0,  2},
+    { 1,  3},
+    { 4,  4},
+    { 7,  5},
+    { 8,  6},
+    {10,  5},
+    {13,  4},
+    {16,  3},
+    {17,  2},
 };
 
 #define GRASS_STARTER (IS_FRLG ? SPECIES_BULBASAUR  : SPECIES_TREECKO)
@@ -116,9 +128,15 @@ static const u8 sStarterLabelCoords[STARTER_MON_COUNT][2] =
 
 static const u16 sStarterMon[STARTER_MON_COUNT] =
 {
-    GRASS_STARTER,
-    FIRE_STARTER,
-    WATER_STARTER,
+    SPECIES_BULBASAUR,
+    SPECIES_CHARMANDER,
+    SPECIES_SQUIRTLE,
+    SPECIES_TREECKO,
+    SPECIES_TORCHIC,
+    SPECIES_MUDKIP,
+    SPECIES_PICHU,
+    SPECIES_RIOLU,
+    SPECIES_GASTLY,
 };
 
 static const struct BgTemplate sBgTemplates[3] =
@@ -207,9 +225,15 @@ static const struct OamData sOam_StarterCircle =
 
 static const u8 sCursorCoords[][2] =
 {
-    {60, 32},
-    {120, 56},
-    {180, 32},
+    { 24, 20},
+    { 48, 28},
+    { 72, 36},
+    { 96, 44},
+    {120, 52},
+    {144, 44},
+    {168, 36},
+    {192, 28},
+    {216, 20},
 };
 
 static const union AnimCmd sAnim_Hand[] =
@@ -349,7 +373,7 @@ static const struct SpriteTemplate sSpriteTemplate_StarterCircle =
 // .text
 u16 GetStarterPokemon(u16 chosenStarterId)
 {
-    if (chosenStarterId > STARTER_MON_COUNT)
+    if (chosenStarterId >= STARTER_MON_COUNT)
         chosenStarterId = 0;
     return sStarterMon[chosenStarterId];
 }
@@ -372,6 +396,7 @@ static void VblankCB_StarterChoose(void)
 
 void CB2_ChooseStarter(void)
 {
+    u8 i;
     u8 taskId;
     u8 spriteId;
 
@@ -446,17 +471,24 @@ void CB2_ChooseStarter(void)
     gSprites[spriteId].data[0] = taskId;
 
     // Create three Poké Ball sprites
-    spriteId = CreateSprite(&sSpriteTemplate_Pokeball, sPokeballCoords[0][0], sPokeballCoords[0][1], 2);
-    gSprites[spriteId].sTaskId = taskId;
-    gSprites[spriteId].sBallId = 0;
+    for (i = 0; i < STARTER_MON_COUNT; i++)
+    {
+        spriteId = CreateSprite(&sSpriteTemplate_Pokeball, sPokeballCoords[i][0], sPokeballCoords[i][1], 2);
+        gSprites[spriteId].sTaskId = taskId;
+        gSprites[spriteId].sBallId = i;
+    }    
+    
+    //spriteId = CreateSprite(&sSpriteTemplate_Pokeball, sPokeballCoords[0][0], sPokeballCoords[0][1], 2);
+    //gSprites[spriteId].sTaskId = taskId;
+    //gSprites[spriteId].sBallId = 0;
 
-    spriteId = CreateSprite(&sSpriteTemplate_Pokeball, sPokeballCoords[1][0], sPokeballCoords[1][1], 2);
-    gSprites[spriteId].sTaskId = taskId;
-    gSprites[spriteId].sBallId = 1;
+    //spriteId = CreateSprite(&sSpriteTemplate_Pokeball, sPokeballCoords[1][0], sPokeballCoords[1][1], 2);
+    //gSprites[spriteId].sTaskId = taskId;
+    //gSprites[spriteId].sBallId = 1;
 
-    spriteId = CreateSprite(&sSpriteTemplate_Pokeball, sPokeballCoords[2][0], sPokeballCoords[2][1], 2);
-    gSprites[spriteId].sTaskId = taskId;
-    gSprites[spriteId].sBallId = 2;
+    //spriteId = CreateSprite(&sSpriteTemplate_Pokeball, sPokeballCoords[2][0], sPokeballCoords[2][1], 2);
+    //gSprites[spriteId].sTaskId = taskId;
+    //gSprites[spriteId].sBallId = 2;
 
     sStarterLabelWindowId = WINDOW_NONE;
 }
