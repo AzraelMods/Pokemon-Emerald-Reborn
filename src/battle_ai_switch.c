@@ -795,7 +795,7 @@ static bool32 ShouldSwitchIfBadlyStatused(struct SwitchAiContext *switchContext)
                 return SetSwitchinAndSwitch(switchContext->battler, PARTY_SIZE);
 
             //Leech Seed
-            if (gBattleMons[switchContext->battler].volatiles.leechSeed
+            if ((gBattleMons[switchContext->battler].status1 & STATUS1_LEECH_SEED)
                 && (switchContext->hasStatRaised ? RandomPercentage(RNG_AI_SWITCH_SEEDED, GetSwitchChance(SHOULD_SWITCH_SEEDED_STATS_RAISED)) : RandomPercentage(RNG_AI_SWITCH_SEEDED, GetSwitchChance(SHOULD_SWITCH_SEEDED))))
                 return SetSwitchinAndSwitch(switchContext->battler, PARTY_SIZE);
         }

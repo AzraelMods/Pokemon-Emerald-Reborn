@@ -10,8 +10,8 @@ static const struct LevelUpMove sNoneLevelUpLearnset[] = {
 static const struct LevelUpMove sBulbasaurLevelUpLearnset[] = {
     LEVEL_UP_MOVE( 1, MOVE_ABSORB),
     LEVEL_UP_MOVE( 1, MOVE_SMOG),
-    LEVEL_UP_MOVE( 1, MOVE_GROWTH),
-    LEVEL_UP_MOVE( 5, MOVE_LEECH_LIFE),
+    LEVEL_UP_MOVE( 1, MOVE_LEECH_SEED),
+    LEVEL_UP_MOVE( 5, MOVE_ROAR),
     LEVEL_UP_MOVE(10, MOVE_REFLECT),
     LEVEL_UP_MOVE(15, MOVE_MEGA_DRAIN),
     LEVEL_UP_MOVE(20, MOVE_LEECH_SEED),
@@ -6853,8 +6853,8 @@ static const struct LevelUpMove sCelebiLevelUpLearnset[] = {
 
 #if P_FAMILY_TREECKO
 static const struct LevelUpMove sTreeckoLevelUpLearnset[] = {
-    LEVEL_UP_MOVE( 1, MOVE_POUND),
-    LEVEL_UP_MOVE( 1, MOVE_LEER),
+    LEVEL_UP_MOVE( 1, MOVE_LEECH_SEED),
+    //LEVEL_UP_MOVE( 1, MOVE_LEER),
     LEVEL_UP_MOVE( 3, MOVE_LEAFAGE),
     LEVEL_UP_MOVE( 6, MOVE_QUICK_ATTACK),
     LEVEL_UP_MOVE( 9, MOVE_MEGA_DRAIN),

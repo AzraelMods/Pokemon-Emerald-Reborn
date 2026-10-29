@@ -2232,7 +2232,7 @@ bool32 IsBattlerDamagedByStatus(enum BattlerId battler)
         || gBattleMons[battler].volatiles.nightmare
         || gBattleMons[battler].volatiles.cursed
         || gBattleMons[battler].volatiles.saltCure
-        || gBattleMons[battler].volatiles.leechSeed
+        || (gBattleMons[battler].status1 & STATUS1_LEECH_SEED)
         || gBattleMons[battler].volatiles.perishSong
         || gSideStatuses[GetBattlerSide(battler)] & (SIDE_STATUS_SEA_OF_FIRE | SIDE_STATUS_DAMAGE_NON_TYPES);
 }
@@ -2471,7 +2471,7 @@ enum AIScore IncreaseStatDownScore(enum BattlerId battlerAtk, enum BattlerId bat
         tempScore += WEAK_EFFECT;
         if (IsBattlerTrapped(battlerAtk, battlerDef))
             tempScore += DECENT_EFFECT;
-        if (gBattleMons[battlerDef].volatiles.leechSeed)
+        if (gBattleMons[battlerDef].status1 & STATUS1_LEECH_SEED)
             tempScore += WEAK_EFFECT;
         if (gBattleMons[battlerDef].volatiles.cursed)
             tempScore += WEAK_EFFECT;
@@ -2479,7 +2479,7 @@ enum AIScore IncreaseStatDownScore(enum BattlerId battlerAtk, enum BattlerId bat
     case STAT_EVASION:
         if (gBattleMons[battlerDef].status1 & STATUS1_PSN_ANY)
             tempScore += WEAK_EFFECT;
-        if (gBattleMons[battlerDef].volatiles.leechSeed)
+        if (gBattleMons[battlerDef].status1 & STATUS1_LEECH_SEED)
             tempScore += WEAK_EFFECT;
         if (gBattleMons[battlerDef].volatiles.root)
             tempScore += WEAK_EFFECT;
@@ -3224,8 +3224,7 @@ bool32 IsTwoTurnNotSemiInvulnerableMove(enum BattlerId battlerAtk, enum Move mov
 static u32 GetLeechSeedDamage(enum BattlerId battler)
 {
     u32 damage = 0;
-    u32 leechSeeder = gBattleMons[battler].volatiles.leechSeed;
-    if (leechSeeder && gBattleMons[leechSeeder - 1].hp != 0)
+    if (gBattleMons[battler].status1 & STATUS1_LEECH_SEED)
      {
         damage = GetNonDynamaxMaxHP(battler) / 8;
         if (damage == 0)
@@ -5604,9 +5603,9 @@ void IncreaseTidyUpScore(enum BattlerId battlerAtk, enum BattlerId battlerDef, e
     if (gBattleMons[battlerDef].volatiles.substitute)
         ADJUST_SCORE_PTR(GOOD_EFFECT);
 
-    if (gBattleMons[battlerAtk].volatiles.leechSeed)
+    if (gBattleMons[battlerAtk].status1 & STATUS1_LEECH_SEED)
         ADJUST_SCORE_PTR(DECENT_EFFECT);
-    if (gBattleMons[battlerDef].volatiles.leechSeed)
+    if (gBattleMons[battlerDef].status1 & STATUS1_LEECH_SEED)
         ADJUST_SCORE_PTR(-2);
 }
 

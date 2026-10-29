@@ -156,7 +156,8 @@ struct MoveInfo
     bool32 alwaysHitsOnSameType:1; // Always hits if user is of same type as move
     bool32 noAffectOnSameTypeTarget:1; // Fails if target is of same type as move
     bool32 accIncreaseByTenOnSameType:1; // Accuracy is increased by 10% if user is of same type as move
-    bool32 padding1:10;
+    bool32 accuracyMinus20PerSleepingMon:1; // -20 accuracy per sleeping mon on the target's team
+    bool32 padding1:9;
     // end of word
 
     // Ban flags
@@ -469,6 +470,11 @@ static inline bool32 MoveIgnoresTypeIfFlyingAndUngrounded(enum Move moveId)
 static inline bool32 MoveThawsUser(enum Move moveId)
 {
     return gMovesInfo[SanitizeMoveId(moveId)].thawsUser;
+}
+
+static inline bool32 MoveHasAccuracyMinus20PerSleepingMon(enum Move moveId)
+{
+    return gMovesInfo[SanitizeMoveId(moveId)].accuracyMinus20PerSleepingMon;
 }
 
 static inline bool32 MoveIgnoresSubstitute(enum Move moveId)

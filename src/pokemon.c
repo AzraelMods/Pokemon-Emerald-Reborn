@@ -693,6 +693,7 @@ static const u32 sCompressedStatuses[] =
     STATUS1_PARALYSIS,
     STATUS1_TOXIC_POISON,
     STATUS1_FROSTBITE,
+    STATUS1_LEECH_SEED,
 };
 
 // Attempt to detect situations where the BoxPokemon struct is unable to
@@ -3960,6 +3961,8 @@ bool8 HealStatusConditions(struct Pokemon *mon, u32 healMask, enum BattlerId bat
             gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_CURED_FREEZE;
         else if (status & STATUS1_FROSTBITE)
             gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_CURED_FROSTBITE;
+        else if (status & STATUS1_LEECH_SEED)
+            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_CURED_LEECH_SEED;
         status &= ~healMask;
         SetMonData(mon, MON_DATA_STATUS, &status);
         if (gMain.inBattle && battler != MAX_BATTLERS_COUNT)

@@ -1763,8 +1763,25 @@ void BattleMainCB2(void)
     }
 }
 
+static void ClearBattleLeechSeedStatuses(void)
+{
+    for (enum BattleTrainer trainer = 0; trainer < MAX_BATTLE_TRAINERS; trainer++)
+    {
+        for (u32 partyIndex = 0; partyIndex < PARTY_SIZE; partyIndex++)
+        {
+            u32 status = GetMonData(&gParties[trainer][partyIndex], MON_DATA_STATUS);
+            if (status & STATUS1_LEECH_SEED)
+            {
+                status &= ~STATUS1_LEECH_SEED;
+                SetMonData(&gParties[trainer][partyIndex], MON_DATA_STATUS, &status);
+            }
+        }
+    }
+}
+
 static void FreeRestoreBattleData(void)
 {
+    ClearBattleLeechSeedStatuses();
     gMain.callback1 = gPreBattleCallback1;
     gScanlineEffect.state = 3;
     gMain.inBattle = FALSE;
@@ -5562,6 +5579,7 @@ static void FreeResetData_ReturnToOvOrDoEvolutions(void)
 {
     if (!gPaletteFade.active)
     {
+        ClearBattleLeechSeedStatuses();
         memset(&gBattleMons, 0, sizeof(struct BattlePokemon) * MAX_BATTLERS_COUNT);
         gIsFishingEncounter = FALSE;
         gIsSurfingEncounter = FALSE;

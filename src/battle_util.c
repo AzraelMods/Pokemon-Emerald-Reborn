@@ -10332,6 +10332,34 @@ bool32 CanMoveSkipAccuracyCalc(enum BattlerId battlerAtk, enum BattlerId battler
     return effect;
 }
 
+static u32 CountSleepingMonsOnSide(enum BattlerId battler)
+{
+    u32 i, j, count = 0;
+    struct Pokemon *party = GetBattlerParty(battler);
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        u32 status;
+
+        if (GetMonData(&party[i], MON_DATA_SPECIES) == SPECIES_NONE || GetMonData(&party[i], MON_DATA_IS_EGG))
+            continue;
+
+        status = GetMonData(&party[i], MON_DATA_STATUS);
+        // Active battlers hold the up-to-date status in gBattleMons.
+        for (j = 0; j < gBattlersCount; j++)
+        {
+            if (IsOnPlayerSide(j) == IsOnPlayerSide(battler) && gBattlerPartyIndexes[j] == i)
+            {
+                status = gBattleMons[j].status1;
+                break;
+            }
+        }
+        if (status & STATUS1_SLEEP)
+            count++;
+    }
+    return count;
+}
+
 u32 GetTotalAccuracy(enum BattlerId battlerAtk, enum BattlerId battlerDef, enum Move move, enum Ability atkAbility, enum Ability defAbility, enum HoldEffect atkHoldEffect, enum HoldEffect defHoldEffect)
 {
     u32 calc, moveAcc;
@@ -10421,6 +10449,12 @@ u32 GetTotalAccuracy(enum BattlerId battlerAtk, enum BattlerId battlerDef, enum 
         moveAcc = (moveAcc * 90) / 100;
 
     
+    if (MoveHasAccuracyMinus20PerSleepingMon(move))
+    {
+        u32 penalty = 20 * CountSleepingMonsOnSide(battlerDef);
+        moveAcc = (moveAcc > penalty) ? moveAcc - penalty : 0;
+    }
+
     // Check Wonder Skin.
     if (defAbility == ABILITY_WONDER_SKIN && IsBattleMoveStatus(move) && moveAcc > 50)
         moveAcc = 50;

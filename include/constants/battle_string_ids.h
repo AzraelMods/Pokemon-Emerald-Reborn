@@ -1010,6 +1010,7 @@ enum CureStatusEffectStringID
     B_MSG_CURED_TAUNT,
     B_MSG_CURED_PROBLEM,
     B_MSG_NORMALIZED_STATUS,
+    B_MSG_CURED_LEECH_SEED,
 };
 
 // gNoEscapeStringIds

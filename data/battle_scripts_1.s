@@ -1951,6 +1951,7 @@ BattleScript_DoLeechSeed::
 	waitanimation
 	printfromtable gLeechSeedStringIds
 	waitmessage B_WAIT_TIME_LONG
+	updatestatusicon BS_TARGET
 	goto BattleScript_MoveEnd
 
 BattleScript_EffectDoNothing::

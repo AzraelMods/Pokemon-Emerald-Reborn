@@ -2172,7 +2172,9 @@ static void SetNonVolatileStatus(enum BattlerId battlerAtk, enum BattlerId effec
     switch (effect)
     {
     case MOVE_EFFECT_SLEEP:
-        if (B_SLEEP_TURNS >= GEN_5)
+        if (gCurrentMove == MOVE_HYPNOSIS || gCurrentMove == MOVE_GRASS_WHISTLE)
+            gBattleMons[effectBattler].status1 |= STATUS1_SLEEP_TURN(RandomUniform(RNG_SLEEP_TURNS, 2, 3));
+        else if (B_SLEEP_TURNS >= GEN_5)
             gBattleMons[effectBattler].status1 |= STATUS1_SLEEP_TURN(RandomUniform(RNG_SLEEP_TURNS, 2, 4));
         else if (B_SLEEP_TURNS >= GEN_3)
             gBattleMons[effectBattler].status1 |= STATUS1_SLEEP_TURN(RandomUniform(RNG_SLEEP_TURNS, 2, 5));
@@ -2220,6 +2222,14 @@ static void SetNonVolatileStatus(enum BattlerId battlerAtk, enum BattlerId effec
 
     if ((effect == MOVE_EFFECT_POISON || effect == MOVE_EFFECT_TOXIC) && trigger == TRIGGER_ON_MOVE)
         gSpecialStatuses[effectBattler].poisonPuppeteer = TRUE;
+}
+
+static void SetLeechSeedStatus(enum BattlerId battlerAtk, enum BattlerId effectBattler)
+{
+    gBattleMons[effectBattler].status1 |= STATUS1_LEECH_SEED;
+    gBattleStruct->leechSeedSide[GetBattlerTrainer(effectBattler)][gBattlerPartyIndexes[effectBattler]] = GetBattlerSide(battlerAtk);
+    BtlController_EmitSetMonData(effectBattler, B_COMM_TO_CONTROLLER, REQUEST_STATUS_BATTLE, 0, sizeof(gBattleMons[effectBattler].status1), &gBattleMons[effectBattler].status1);
+    MarkBattlerForControllerExec(effectBattler);
 }
 
 static inline bool32 IgnoreTargetingForMoveEffect(enum MoveEffect moveEffect) // Currently only used to determine move effects which happen even if the move's defined effectbattler is fainted
@@ -2866,9 +2876,10 @@ void SetMoveEffect(enum BattlerId battlerAtk, enum BattlerId effectBattler, enum
         gBattlescriptCurrInstr = BattleScript_MoveEffectHaze;
         break;
     case MOVE_EFFECT_LEECH_SEED:
-        if (!IS_BATTLER_OF_TYPE(effectBattler, TYPE_GRASS) && !gBattleMons[effectBattler].volatiles.leechSeed)
+        if (!IS_BATTLER_OF_TYPE(effectBattler, TYPE_GRASS)
+         && !(gBattleMons[effectBattler].status1 & STATUS1_ANY))
         {
-            gBattleMons[effectBattler].volatiles.leechSeed = LEECHSEEDED_BY(battlerAtk);
+            SetLeechSeedStatus(battlerAtk, effectBattler);
             BattleScriptPush(battleScript);
             gBattlescriptCurrInstr = BattleScript_MoveEffectLeechSeed;
         }
@@ -7022,7 +7033,7 @@ static void Cmd_setseeded(void)
 {
     CMD_ARGS();
 
-    if (IsBattlerUnaffectedByMove(gBattlerTarget) || gBattleMons[gBattlerTarget].volatiles.leechSeed)
+    if (IsBattlerUnaffectedByMove(gBattlerTarget) || (gBattleMons[gBattlerTarget].status1 & STATUS1_ANY))
     {
         gBattleStruct->moveResultFlags[gBattlerTarget] |= MOVE_RESULT_MISSED;
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_LEECH_SEED_MISS;
@@ -7034,7 +7045,7 @@ static void Cmd_setseeded(void)
     }
     else
     {
-        gBattleMons[gBattlerTarget].volatiles.leechSeed = LEECHSEEDED_BY(gBattlerAttacker);
+        SetLeechSeedStatus(gBattlerAttacker, gBattlerTarget);
         gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_LEECH_SEED_SET;
     }
 
@@ -8553,9 +8564,11 @@ static void Cmd_rapidspinfree(void)
         PREPARE_MOVE_BUFFER(gBattleTextBuff1, gBattleMons[gBattlerAttacker].volatiles.wrappedMove);
         BattleScriptCall(BattleScript_WrapFree);
     }
-    else if (gBattleMons[gBattlerAttacker].volatiles.leechSeed)
+    else if (gBattleMons[gBattlerAttacker].status1 & STATUS1_LEECH_SEED)
     {
-        gBattleMons[gBattlerAttacker].volatiles.leechSeed = 0;
+        gBattleMons[gBattlerAttacker].status1 &= ~STATUS1_LEECH_SEED;
+        BtlController_EmitSetMonData(gBattlerAttacker, B_COMM_TO_CONTROLLER, REQUEST_STATUS_BATTLE, 0, sizeof(gBattleMons[gBattlerAttacker].status1), &gBattleMons[gBattlerAttacker].status1);
+        MarkBattlerForControllerExec(gBattlerAttacker);
         BattleScriptCall(BattleScript_LeechSeedFree);
     }
     else if (AreAnyHazardsOnSide(atkSide))
@@ -8599,11 +8612,11 @@ static void Cmd_recoverbasedonsunlight(void)
         else if (GetConfig(B_TIME_OF_DAY_HEALING_MOVES) != GEN_2)
         {
             if (attackerWeather & B_WEATHER_SUN)
-                recoverAmount = 20 * GetNonDynamaxMaxHP(gBattlerAttacker) / 30;
+                recoverAmount = GetNonDynamaxMaxHP(gBattlerAttacker) / 3;
             else if (!(healingWeather & B_WEATHER_ANY) || GetBattlerHoldEffect(gBattlerAttacker) == HOLD_EFFECT_UTILITY_UMBRELLA)
-                recoverAmount = GetNonDynamaxMaxHP(gBattlerAttacker) / 2;
-            else // not sunny weather
                 recoverAmount = GetNonDynamaxMaxHP(gBattlerAttacker) / 4;
+            else // not sunny weather
+                recoverAmount = 15 * GetNonDynamaxMaxHP(gBattlerAttacker) / 100;
         }
         else // B_TIME_OF_DAY_HEALING_MOVES == GEN_2
         {
@@ -8623,18 +8636,18 @@ static void Cmd_recoverbasedonsunlight(void)
                 break;
             case EFFECT_SYNTHESIS:
                 if (time == TIME_DAY)
-                    healingModifier = 2;
+                    healingModifier = 1;
                 break;
             default:
                 healingModifier = 1;
                 break;
             }
             if (attackerWeather & B_WEATHER_SUN)
-                recoverAmount = healingModifier * GetNonDynamaxMaxHP(gBattlerAttacker) / 2;
+                recoverAmount = healingModifier * GetNonDynamaxMaxHP(gBattlerAttacker) / 3;
             else if (!(healingWeather & B_WEATHER_ANY) || GetBattlerHoldEffect(gBattlerAttacker) == HOLD_EFFECT_UTILITY_UMBRELLA)
-                recoverAmount = healingModifier * GetNonDynamaxMaxHP(gBattlerAttacker) / 4;
+                recoverAmount = healingModifier * GetNonDynamaxMaxHP(gBattlerAttacker) / 1;
             else // not sunny weather
-                recoverAmount = healingModifier * GetNonDynamaxMaxHP(gBattlerAttacker) / 8;
+                recoverAmount = healingModifier * (GetNonDynamaxMaxHP(gBattlerAttacker)*15) / 100;
 
         }
 

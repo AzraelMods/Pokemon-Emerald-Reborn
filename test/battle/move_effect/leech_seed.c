@@ -21,7 +21,7 @@ SINGLE_BATTLE_TEST("Leech Seed doesn't affect Grass-type Pokémon")
     }
 }
 
-SINGLE_BATTLE_TEST("Leech Seeded targets lose 1/8 of its max HP every turn and give it to the user")
+SINGLE_BATTLE_TEST("Leech Seeded targets lose 1/8 of its max HP every turn and heal the only active ally")
 {
     s16 damage;
     s16 healed;
@@ -40,6 +40,49 @@ SINGLE_BATTLE_TEST("Leech Seeded targets lose 1/8 of its max HP every turn and g
         HP_BAR(player, captureDamage: &healed);
     } THEN {
         EXPECT_MUL_EQ(damage, Q_4_12(-1), healed);
+    }
+}
+
+DOUBLE_BATTLE_TEST("Leech Seed heals the active ally with the lowest HP")
+{
+    s16 damage;
+    s16 healed;
+
+    GIVEN {
+        PLAYER(SPECIES_WYNAUT) { HP(100); }
+        PLAYER(SPECIES_WOBBUFFET) { HP(1); }
+        OPPONENT(SPECIES_SHELLDER);
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN {
+            MOVE(playerLeft, MOVE_LEECH_SEED, target: opponentLeft);
+            MOVE(playerRight, MOVE_CELEBRATE);
+            MOVE(opponentLeft, MOVE_CELEBRATE);
+            MOVE(opponentRight, MOVE_CELEBRATE);
+        }
+        TURN {
+            MOVE(playerLeft, MOVE_CELEBRATE);
+            MOVE(playerRight, MOVE_CELEBRATE);
+            MOVE(opponentLeft, MOVE_CELEBRATE);
+            MOVE(opponentRight, MOVE_CELEBRATE);
+        }
+    } SCENE {
+        HP_BAR(opponentLeft, captureDamage: &damage);
+        HP_BAR(playerRight, captureDamage: &healed);
+    } THEN {
+        EXPECT_MUL_EQ(damage, Q_4_12(-1), healed);
+    }
+}
+
+SINGLE_BATTLE_TEST("Leech Seed does not replace another status1 condition")
+{
+    GIVEN {
+        PLAYER(SPECIES_WYNAUT);
+        OPPONENT(SPECIES_SHELLDER) { Status1(STATUS1_POISON); }
+    } WHEN {
+        TURN { MOVE(player, MOVE_LEECH_SEED); }
+    } THEN {
+        EXPECT_EQ(opponent->status1, STATUS1_POISON);
     }
 }
 

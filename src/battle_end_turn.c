@@ -476,39 +476,50 @@ static bool32 HandleEndTurnIngrain(enum BattlerId battler)
 static bool32 HandleEndTurnLeechSeed(enum BattlerId battler)
 {
     bool32 effect = FALSE;
-    enum BattlerId drainedBattler = gBattleMons[battler].volatiles.leechSeed;
+    enum BattleSide seederSide = gBattleStruct->leechSeedSide[GetBattlerTrainer(battler)][gBattlerPartyIndexes[battler]];
+    enum BattlerId healingBattler = MAX_BATTLERS_COUNT;
 
     gBattleStruct->eventState.endTurnBattler++;
 
-    if (drainedBattler
-     && IsBattlerPresent(drainedBattler - 1)
-     && IsBattlerPresent(battler)
+    if ((gBattleMons[battler].status1 & STATUS1_LEECH_SEED)
+     && IsBattlerAlive(battler)
      && !IsAbilityAndRecord(battler, GetBattlerAbility(battler), ABILITY_MAGIC_GUARD))
     {
-        gBattlerTarget = drainedBattler - 1; // leech seed receiver
-        gBattleScripting.animArg1 = gBattlerTarget;
-        gBattleScripting.animArg2 = gBattlerAttacker;
-        s32 drainAmount = GetNonDynamaxMaxHP(gBattlerAttacker) / 8;
-        s32 healAmount = GetDrainedBigRootHp(gBattlerTarget, drainAmount);
-        if (GetBattlerAbility(battler) == ABILITY_LIQUID_OOZE)
+        for (enum BattlerId candidate = 0; candidate < gBattlersCount; candidate++)
         {
-            SetPassiveDamageAmount(gBattlerAttacker, drainAmount);
-            SetPassiveDamageAmount(gBattlerTarget, healAmount);
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_LEECH_SEED_OOZE;
-            BattleScriptCall(BattleScript_LeechSeedTurnDrainLiquidOoze);
+            if (IsBattlerAlive(candidate)
+             && GetBattlerSide(candidate) == seederSide
+             && (healingBattler == MAX_BATTLERS_COUNT || gBattleMons[candidate].hp < gBattleMons[healingBattler].hp))
+                healingBattler = candidate;
         }
-        else if (gBattleMons[gBattlerTarget].volatiles.healBlock)
+
+        if (healingBattler != MAX_BATTLERS_COUNT)
         {
-            BattleScriptCall(BattleScript_LeechSeedTurnDrainHealBlock);
+            gBattlerTarget = healingBattler;
+            gBattleScripting.animArg1 = gBattlerTarget;
+            gBattleScripting.animArg2 = gBattlerAttacker;
+            s32 drainAmount = GetNonDynamaxMaxHP(gBattlerAttacker) / 8;
+            s32 healAmount = GetDrainedBigRootHp(gBattlerTarget, drainAmount);
+            if (GetBattlerAbility(battler) == ABILITY_LIQUID_OOZE)
+            {
+                SetPassiveDamageAmount(gBattlerAttacker, drainAmount);
+                SetPassiveDamageAmount(gBattlerTarget, healAmount);
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_LEECH_SEED_OOZE;
+                BattleScriptCall(BattleScript_LeechSeedTurnDrainLiquidOoze);
+            }
+            else if (gBattleMons[gBattlerTarget].volatiles.healBlock)
+            {
+                BattleScriptCall(BattleScript_LeechSeedTurnDrainHealBlock);
+            }
+            else
+            {
+                SetPassiveDamageAmount(gBattlerAttacker, drainAmount);
+                SetHealAmount(gBattlerTarget, healAmount);
+                gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_LEECH_SEED_DRAIN;
+                BattleScriptCall(BattleScript_LeechSeedTurnDrainRecovery);
+            }
+            effect = TRUE;
         }
-        else
-        {
-            SetPassiveDamageAmount(gBattlerAttacker, drainAmount);
-            SetHealAmount(gBattlerTarget, healAmount);
-            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_LEECH_SEED_DRAIN;
-            BattleScriptCall(BattleScript_LeechSeedTurnDrainRecovery);
-        }
-        effect = TRUE;
     }
 
     return effect;
@@ -955,12 +966,8 @@ static bool32 HandleEndTurnYawn(enum BattlerId battler)
             }
             else
             {
-                if (B_SLEEP_TURNS >= GEN_5)
-                    gBattleMons[battler].status1 |= (RandomUniform(RNG_SLEEP_TURNS, 2, 4));
-                else if (B_SLEEP_TURNS >= GEN_3)
-                    gBattleMons[battler].status1 |= (RandomUniform(RNG_SLEEP_TURNS, 2, 5));
-                else
-                    gBattleMons[battler].status1 |= (RandomUniform(RNG_SLEEP_TURNS, 2, 8));
+                // Delayed sleep from Yawn and Sleep Powder lasts 3-4 turns.
+                gBattleMons[battler].status1 |= STATUS1_SLEEP_TURN(RandomUniform(RNG_SLEEP_TURNS, 3, 4));
 
                 CancelMultiTurnMoves(battler);
                 TryActivateSleepClause(battler, gBattlerPartyIndexes[battler]);
